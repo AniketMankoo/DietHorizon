@@ -2,15 +2,41 @@ const axios = require("axios");
 
 // External API Configuration
 const RECIPE_API_URL = "https://api.spoonacular.com/recipes/findByIngredients";
-const RECIPE_DETAILS_API_URL = "https://api.spoonacular.com/recipes/{id}/information";
 const NUTRITION_API_URL = "https://api.spoonacular.com/recipes/{id}/nutritionWidget.json";
 const API_KEY = process.env.SPOONACULAR_API_KEY; // Store API Key in .env
 
 // In-memory storage for favorite recipes (Replace with DB later)
 const favoriteRecipes = new Map();
 
+// Healthier Ingredient Alternatives Map
+const alternatives = {
+    "sugar": "honey or stevia",
+    "butter": "olive oil or avocado",
+    "white rice": "brown rice or quinoa",
+    "milk": "almond milk or oat milk",
+    "salt": "low-sodium salt or herbs like basil",
+    "flour": "whole wheat flour or almond flour",
+    "potatoes": "sweet potatoes or cauliflower mash",
+    "pasta": "zucchini noodles or whole wheat pasta",
+    "cream": "Greek yogurt or coconut cream",
+    "mayonnaise": "mashed avocado or Greek yogurt",
+    "bread": "whole grain bread or lettuce wraps",
+    "cheese": "nutritional yeast or low-fat cheese",
+    "chocolate": "dark chocolate (70%+ cocoa) or cacao nibs",
+    "fried food": "baked or air-fried alternatives",
+    "soda": "sparkling water with lemon or kombucha",
+    "ice cream": "banana nice cream or Greek yogurt with honey",
+    "oil for frying": "baking or steaming instead",
+    "white pasta": "chickpea pasta or lentil pasta",
+    "processed meat": "lean meats like chicken or tofu",
+    "corn syrup": "maple syrup or agave nectar",
+    "soy sauce": "coconut aminos or tamari",
+    "ketchup": "homemade tomato puree with herbs",
+    "canned beans": "cooked dried beans (less sodium)"
+};
+
 /**
- * Generate Recipe Based on Ingredients (Includes cooking time, instructions, and nutrition)
+ * Generate Recipe Based on Ingredients (With Healthier Alternatives)
  */
 exports.generateRecipe = async (req, res) => {
     try {
@@ -20,36 +46,24 @@ exports.generateRecipe = async (req, res) => {
             return res.status(400).json({ error: "Ingredients are required and must be an array." });
         }
 
+        // Suggest healthier alternatives where possible
+        const modifiedIngredients = ingredients.map(ing => alternatives[ing.toLowerCase()] || ing);
+
         const response = await axios.get(RECIPE_API_URL, {
             params: {
-                ingredients: ingredients.join(","),
-                number: 5,
+                ingredients: modifiedIngredients.join(","), // Convert array to comma-separated string
+                number: 5, // Fetch 5 recipes
                 apiKey: API_KEY,
             },
         });
 
-        let recipes = response.data;
+        const recipes = response.data;
 
         if (!recipes.length) {
             return res.status(404).json({ error: "No recipes found for the given ingredients." });
         }
 
-        // Fetch additional details for each recipe
-        const detailedRecipes = await Promise.all(
-            recipes.map(async (recipe) => {
-                const details = await axios.get(RECIPE_DETAILS_API_URL.replace("{id}", recipe.id), {
-                    params: { apiKey: API_KEY },
-                });
-                return {
-                    ...recipe,
-                    cookingTime: details.data.readyInMinutes,
-                    instructions: details.data.instructions,
-                    nutrition: details.data.nutrition,
-                };
-            })
-        );
-
-        res.json({ recipes: detailedRecipes });
+        res.json({ recipes, modifiedIngredients });
 
     } catch (error) {
         console.error("Error fetching recipes:", error.message);
@@ -58,9 +72,9 @@ exports.generateRecipe = async (req, res) => {
 };
 
 /**
- * Get Nutritional Information for a Recipe
+ * Get Nutritional Information for a Recipe (Total Macronutrients)
  */
-exports.getNutritionalInfo = async (req, res) => {
+exports.getRecipeNutrition = async (req, res) => {
     try {
         const { recipeId } = req.params;
 
@@ -68,7 +82,15 @@ exports.getNutritionalInfo = async (req, res) => {
             params: { apiKey: API_KEY },
         });
 
-        res.json({ nutrition: response.data });
+        const nutritionData = response.data;
+        const totalNutrition = {
+            calories: nutritionData.calories,
+            protein: nutritionData.protein,
+            carbs: nutritionData.carbs,
+            fat: nutritionData.fat,
+        };
+
+        res.json({ totalNutrition });
 
     } catch (error) {
         console.error("Error fetching nutrition info:", error.message);
@@ -77,54 +99,12 @@ exports.getNutritionalInfo = async (req, res) => {
 };
 
 /**
- * Suggest Healthier Ingredient Alternatives
+ * Suggest Healthier Ingredient Alternatives (Standalone API)
  */
 exports.suggestAlternatives = (req, res) => {
     const { ingredient } = req.body;
-
-    const alternatives = {
-        "sugar": "honey",
-        "butter": "olive oil",
-        "white rice": "brown rice",
-        "milk": "almond milk",
-        "salt": "low-sodium salt",
-    };
-
     const suggestion = alternatives[ingredient.toLowerCase()] || "No alternative found.";
-
     res.json({ ingredient, alternative: suggestion });
-};
-
-/**
- * Calorie Counter - Calculate Total Calories from Ingredients
- */
-exports.calculateCalories = async (req, res) => {
-    try {
-        const { ingredients } = req.body;
-
-        if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
-            return res.status(400).json({ error: "Ingredients are required." });
-        }
-
-        let totalCalories = 0;
-
-        for (const ingredient of ingredients) {
-            const response = await axios.get("https://api.spoonacular.com/food/ingredients/search", {
-                params: { query: ingredient, apiKey: API_KEY },
-            });
-
-            const data = response.data.results[0];
-            if (data) {
-                totalCalories += data.calories || 0;
-            }
-        }
-
-        res.json({ ingredients, totalCalories });
-
-    } catch (error) {
-        console.error("Error calculating calories:", error.message);
-        res.status(500).json({ error: "Internal server error" });
-    }
 };
 
 /**
