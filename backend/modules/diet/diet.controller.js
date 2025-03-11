@@ -22,7 +22,7 @@ const dietUpdate = (req, res) => {
     const index = diets.findIndex(d => d.id === parseInt(req.params.id));
     if (index === -1) return res.status(404).json({ message: 'Diet not found' });
 
-    diets[index] = { ...diets[index], ...req.body }; // Update existing diet
+    diets[index] = { ...diets[index], ...req.body }; 
     res.status(200).json(diets[index]);
 };
 

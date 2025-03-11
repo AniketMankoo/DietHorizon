@@ -1,14 +1,11 @@
 const axios = require("axios");
 
-// External API Configuration
 const RECIPE_API_URL = "https://api.spoonacular.com/recipes/findByIngredients";
 const NUTRITION_API_URL = "https://api.spoonacular.com/recipes/{id}/nutritionWidget.json";
-const API_KEY = process.env.SPOONACULAR_API_KEY; // Store API Key in .env
+const API_KEY = process.env.SPOONACULAR_API_KEY;
 
-// In-memory storage for favorite recipes (Replace with DB later)
 const favoriteRecipes = new Map();
 
-// Healthier Ingredient Alternatives Map
 const alternatives = {
     "sugar": "honey or stevia",
     "butter": "olive oil or avocado",
@@ -35,9 +32,6 @@ const alternatives = {
     "canned beans": "cooked dried beans (less sodium)"
 };
 
-/**
- * Generate Recipe Based on Ingredients (With Healthier Alternatives)
- */
 exports.generateRecipe = async (req, res) => {
     try {
         const { ingredients } = req.body;
@@ -71,9 +65,6 @@ exports.generateRecipe = async (req, res) => {
     }
 };
 
-/**
- * Get Nutritional Information for a Recipe (Total Macronutrients)
- */
 exports.getRecipeNutrition = async (req, res) => {
     try {
         const { recipeId } = req.params;
@@ -98,18 +89,12 @@ exports.getRecipeNutrition = async (req, res) => {
     }
 };
 
-/**
- * Suggest Healthier Ingredient Alternatives (Standalone API)
- */
 exports.suggestAlternatives = (req, res) => {
     const { ingredient } = req.body;
     const suggestion = alternatives[ingredient.toLowerCase()] || "No alternative found.";
     res.json({ ingredient, alternative: suggestion });
 };
 
-/**
- * Save Recipe to Favorites
- */
 exports.saveFavoriteRecipe = (req, res) => {
     const { userId, recipe } = req.body;
 
@@ -125,9 +110,6 @@ exports.saveFavoriteRecipe = (req, res) => {
     res.json({ message: "Recipe added to favorites!", favoriteRecipes: favoriteRecipes.get(userId) });
 };
 
-/**
- * Get Favorite Recipes
- */
 exports.getFavoriteRecipes = (req, res) => {
     const { userId } = req.params;
 
