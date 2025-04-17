@@ -1,30 +1,31 @@
-const ErrorResponse = require("../utils/errorResponse");
+// middlewares/errorMiddleware.js
+const ErrorResponse = require('../utils/errorResponse');
 
 const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
+  let error = { ...err };
+  error.message = err.message;
+  error.statusCode = err.statusCode;
 
-    let statusCode = err.statusCode || 500;
-    let message = err.message || "Internal Server Error";
+  // Log error for development
+  console.error(err);
 
-    if (err.name === "ValidationError") {
-        statusCode = 400;
-        message = Object.values(err.errors).map((val) => val.message).join(", ");
+  // Handle JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    error = new ErrorResponse('Invalid token', 401);
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    error = new ErrorResponse('Token expired', 401);
+  }
+
+  // Send standardized error response
+  res.status(error.statusCode || 500).json({
+    success: false,
+    error: {
+      message: error.message || 'Server Error',
+      statusCode: error.statusCode || 500
     }
-
-    if (err.code === 11000) {
-        statusCode = 400;
-        message = `Duplicate field value entered: ${JSON.stringify(err.keyValue)}`;
-    }
-
-    if (err.name === "CastError") {
-        statusCode = 400;
-        message = `Invalid ${err.path}: ${err.value}`;
-    }
-
-    res.status(statusCode).json({
-        success: false,
-        message,
-    });
+  });
 };
 
 module.exports = errorHandler;

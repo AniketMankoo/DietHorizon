@@ -1,160 +1,213 @@
-const User = require("../models/userModel");
-const asyncHandler = require("../utils/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
+// controllers/userController.js
+const User = require('../models/userModel');
+const ErrorResponse = require('../utils/errorResponse');
+const errorMessages = require('../utils/errorMessages');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 /**
- * @desc    Get user profile
- * @route   GET /api/users/profile
- * @access  Private
- */
-const getUserProfile = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) {
-        return next(new ErrorResponse("User not found", 404));
-    }
-    res.status(200).json({ success: true, data: user });
-});
-
-/**
- * @desc    Update user profile
- * @route   PUT /api/users/profile
- * @access  Private
- */
-const updateUserProfile = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.user.id);
-    if (!user) {
-        return next(new ErrorResponse("User not found", 404));
-    }
-
-    const { name, email, phone, address } = req.body;
-
-    if (email && email !== user.email) {
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
-            return next(new ErrorResponse("Email already in use", 400));
-        }
-    }
-
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (phone) user.phone = phone;
-    if (address) user.address = address;
-
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: "Profile updated successfully",
-        data: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            address: user.address,
-        },
-    });
-});
-
-/**
- * @desc    Change user password
- * @route   PUT /api/users/change-password
- * @access  Private
- */
-const changePassword = asyncHandler(async (req, res, next) => {
-    const { oldPassword, newPassword } = req.body;
-
-    const user = await User.findById(req.user.id).select("+password");
-    if (!user || !(await user.comparePassword(oldPassword))) {
-        return next(new ErrorResponse("Invalid current password", 401));
-    }
-
-    user.password = newPassword;
-
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: "Password updated successfully",
-    });
-});
-
-/**
- * @desc    Get all users (Admin only)
+ * @desc    Get all users
  * @route   GET /api/users
  * @access  Private/Admin
  */
-const getAllUsers = asyncHandler(async (req, res, next) => {
-    const users = await User.find().select("-password");
-    res.status(200).json({ success: true, data: users });
-});
-
-/**
- * @desc    Assign role to a user (Admin only)
- * @route   PUT /api/users/:id/assign-role
- * @access  Private/Admin
- */
-const assignRole = asyncHandler(async (req, res, next) => {
-    const { role } = req.body;
-
-    if (!role || !["user", "admin"].includes(role)) {
-        return next(new ErrorResponse("Invalid role", 400));
-    }
-
-    const user = await User.findById(req.params.id);
-    if (!user) {
-        return next(new ErrorResponse("User not found", 404));
-    }
-
-    user.role = role;
-    await user.save();
-
+exports.getAllUsers = asyncHandler(async (req, res, next) => {
+    const users = await User.find().select('-password');
+    
     res.status(200).json({
         success: true,
-        message: "Role assigned successfully",
-        data: {
-            id: user._id,
-            name: user.name,
-            role: user.role,
-        },
+        count: users.length,
+        data: users
     });
 });
 
 /**
- * @desc    Update user role (Admin only)
- * @route   PUT /api/users/:id/update-role
+ * @desc    Get single user
+ * @route   GET /api/users/:id
  * @access  Private/Admin
  */
-const updateUserRole = asyncHandler(async (req, res, next) => {
+exports.getUser = asyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.params.id).select('-password');
+
+    if (!user) {
+        return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        data: user
+    });
+});
+
+/**
+ * @desc    Create user
+ * @route   POST /api/users
+ * @access  Private/Admin
+ */
+exports.createUser = asyncHandler(async (req, res, next) => {
+    const { name, email, password, role } = req.body;
+
+    // Check if all required fields are provided
+    if (!name || !email || !password) {
+        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        return next(new ErrorResponse(errorMessages.EMAIL_EXISTS, 400));
+    }
+
+    // Create user
+    const user = await User.create({
+        name,
+        email,
+        password,
+        role: role || 'user'
+    });
+
+    res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        data: user
+    });
+});
+
+/**
+ * @desc    Update user
+ * @route   PUT /api/users/:id
+ * @access  Private/Admin
+ */
+exports.updateUser = asyncHandler(async (req, res, next) => {
+    const { name, email, role } = req.body;
+    
+    // Create object with only provided fields
+    const fieldsToUpdate = {};
+    if (name) fieldsToUpdate.name = name;
+    if (email) fieldsToUpdate.email = email;
+    if (role) fieldsToUpdate.role = role;
+
+    if (Object.keys(fieldsToUpdate).length === 0) {
+        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
+    }
+
+    // Check if user exists
+    let user = await User.findById(req.params.id);
+    if (!user) {
+        return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
+    }
+
+    // Check if email already exists (if updating email)
+    if (email && email !== user.email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return next(new ErrorResponse(errorMessages.EMAIL_EXISTS, 400));
+        }
+    }
+
+    // Update user
+    user = await User.findByIdAndUpdate(req.params.id, fieldsToUpdate, {
+        new: true,
+        runValidators: true
+    }).select('-password');
+
+    res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        data: user
+    });
+});
+
+/**
+ * @desc    Delete user
+ * @route   DELETE /api/users/:id
+ * @access  Private/Admin
+ */
+exports.deleteUser = asyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
+    }
+
+    // Prevent deleting self
+    if (user._id.toString() === req.user.id) {
+        return next(new ErrorResponse("Cannot delete your own account", 400));
+    }
+    
+    await user.deleteOne();
+    
+    res.status(200).json({
+        success: true,
+        message: "User deleted successfully",
+        data: {}
+    });
+});
+
+/**
+ * @desc    Update user role
+ * @route   PUT /api/users/:id/role
+ * @access  Private/Admin
+ */
+exports.updateUserRole = asyncHandler(async (req, res, next) => {
     const { role } = req.body;
 
-    if (!role || !["user", "admin"].includes(role)) {
-        return next(new ErrorResponse("Invalid role", 400));
+    if (!role) {
+        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
+    }
+
+    // Check if valid role
+    if (!['user', 'admin'].includes(role.toLowerCase())) {
+        return next(new ErrorResponse(errorMessages.INVALID_ROLE, 400));
     }
 
     const user = await User.findById(req.params.id);
+
     if (!user) {
-        return next(new ErrorResponse("User not found", 404));
+        return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
     }
 
-    user.role = role;
+    user.role = role.toLowerCase();
     await user.save();
 
     res.status(200).json({
         success: true,
         message: "User role updated successfully",
-        data: {
-            id: user._id,
-            role: user.role,
-        },
+        data: user
+    });
+});
+
+/**
+ * @desc    Change password
+ * @route   PUT /api/users/:id/password
+ * @access  Private/Admin
+ */
+exports.changePassword = asyncHandler(async (req, res, next) => {
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Password changed successfully"
     });
 });
 
 module.exports = {
-    getUserProfile,
-    updateUserProfile,
-    changePassword,
-    getAllUsers,
-    assignRole,
-    updateUserRole
+    getAllUsers: exports.getAllUsers,
+    getUser: exports.getUser,
+    createUser: exports.createUser,
+    updateUser: exports.updateUser,
+    deleteUser: exports.deleteUser,
+    updateUserRole: exports.updateUserRole,
+    changePassword: exports.changePassword
 };
-        

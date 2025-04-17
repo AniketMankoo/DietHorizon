@@ -1,35 +1,41 @@
 const { check } = require("express-validator");
 
-exports.validateOrder = [
-    check("user")
-        .notEmpty().withMessage("User ID is required")
-        .isMongoId().withMessage("Invalid user ID format"),
+// ✅ Place order validation
+exports.validatePlaceOrder = [
+    check("cartId")
+        .notEmpty().withMessage("Cart ID is required")
+        .isMongoId().withMessage("Invalid cart ID format"),
 
-    check("items")
-        .notEmpty().withMessage("Order must have at least one item")
-        .isArray({ min: 1 }).withMessage("Order must contain at least one item"),
+    check("paymentMethod")
+        .notEmpty().withMessage("Payment method is required")
+        .isIn(["CreditCard", "DebitCard", "PayPal", "Cash"]).withMessage("Invalid payment method"),
 
-    check("items.*.product")
-        .notEmpty().withMessage("Product ID is required")
-        .isMongoId().withMessage("Invalid product ID format"),
+    check("shippingAddress")
+        .notEmpty().withMessage("Shipping address is required")
+        .isMongoId().withMessage("Invalid shipping address ID format")
+];
 
-    check("items.*.quantity")
-        .notEmpty().withMessage("Quantity is required")
-        .isInt({ min: 1 }).withMessage("Quantity must be at least 1"),
-
-    check("totalAmount")
-        .notEmpty().withMessage("Total amount is required")
-        .isFloat({ min: 0.01 }).withMessage("Total amount must be a positive number"),
-
+// ✅ Order status update validation
+exports.validateOrderStatus = [
     check("status")
         .optional()
         .isIn(["Pending", "Processing", "Shipped", "Delivered", "Cancelled"])
         .withMessage("Invalid status. Must be 'Pending', 'Processing', 'Shipped', 'Delivered', or 'Cancelled'"),
+
+    check("paymentStatus")
+        .optional()
+        .isIn(["Pending", "Paid", "Failed", "Refunded", "Cancelled"])
+        .withMessage("Invalid payment status. Must be 'Pending', 'Paid', 'Failed', 'Refunded', or 'Cancelled'")
 ];
 
-exports.validateOrderStatus = [
-    check("status")
-        .notEmpty().withMessage("Order status is required")
-        .isIn(["Pending", "Processing", "Shipped", "Delivered", "Cancelled"])
-        .withMessage("Invalid status. Must be 'Pending', 'Processing', 'Shipped', 'Delivered', or 'Cancelled'"),
+// ✅ Ensure at least one field is provided for update
+exports.validateOrderStatusUpdate = [
+    ...exports.validateOrderStatus,
+    check()
+        .custom((value, { req }) => {
+            if (!req.body.status && !req.body.paymentStatus) {
+                throw new Error("Please provide at least status or paymentStatus");
+            }
+            return true;
+        })
 ];

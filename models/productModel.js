@@ -1,86 +1,47 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const productSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: [true, "Product name is required"],
-            unique: true,
-            trim: true,
-        },
+const productSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Please add a product name'],
+    trim: true,
+    maxlength: [100, 'Product name cannot be more than 100 characters']
+  },
+  description: {
+    type: String,
+    required: [true, 'Please add a product description'],
+    maxlength: [1000, 'Description cannot be more than 1000 characters']
+  },
+  price: {
+    type: Number,
+    required: [true, 'Please add a product price'],
+    min: [0, 'Price cannot be negative']
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: [true, 'Please add a product category']
+  },
+  stock: {
+    type: Number,
+    required: [true, 'Please add product stock'],
+    min: [0, 'Stock cannot be negative'],
+    default: 0
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
+});
 
-        description: {
-            type: String,
-            required: [true, "Product description is required"],
-            maxlength: [500, "Description cannot exceed 500 characters"],
-            trim: true,
-        },
+// Any statics or methods can be added here
 
-        price: {
-            type: Number,
-            required: [true, "Product price is required"],
-            min: [0, "Price cannot be negative"],
-        },
+const Product = mongoose.model('Product', productSchema);
 
-        brand: {
-            type: String,
-            required: [true, "Brand name is required"],
-            trim: true,
-        },
-
-        stock: {
-            type: Number,
-            required: true,
-            default: 0,
-            min: [0, "Stock cannot be negative"],
-        },
-
-        sold: {
-            type: Number,
-            required: true,
-            default: 0,
-            min: [0, "Sold count cannot be negative"],
-        },
-
-        tags: {
-            type: [String],
-            default: [],
-            set: (tags) => tags.map((tag) => tag.toLowerCase().trim()),
-        },
-
-        category: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
-            required: [true, "Category is required"],
-        },
-
-        images: {
-            type: [String], // Assuming URLs of images
-            default: [],
-        },
-
-        ratings: {
-            type: Number,
-            default: 0,
-            min: [0, "Ratings cannot be negative"],
-            max: [5, "Ratings cannot exceed 5"],
-        },
-
-        numOfRatings: {
-            type: Number,
-            default: 0,
-            min: [0, "Number of ratings cannot be negative"],
-        },
-
-        isFeatured: {
-            type: Boolean,
-            default: false,
-        },
-    },
-    {
-        timestamps: true,
-    }
-);
-
-const Product = mongoose.model("Product", productSchema);
 module.exports = Product;

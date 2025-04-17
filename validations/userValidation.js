@@ -1,5 +1,6 @@
 const { check } = require("express-validator");
 
+// ✅ Registration validation
 exports.validateUserRegistration = [
     check("name")
         .notEmpty().withMessage("Name is required")
@@ -23,49 +24,10 @@ exports.validateUserRegistration = [
 
     check("role")
         .optional()
-        .isIn(["Customer", "Admin"]).withMessage("Invalid role. Must be 'Customer' or 'Admin'"),
-
-    check("countryCode")
-        .notEmpty().withMessage("Country Code is required")
-        .matches(/^\+\d{1,3}$/).withMessage("Invalid Country Code format")
-        .trim(),
-
-    check("phone")
-        .notEmpty().withMessage("Phone number is required")
-        .customSanitizer(value => value.replace(/\D/g, ""))
-        .matches(/^\d{10}$/).withMessage("Invalid phone number. Must be a 10-digit number")
-        .trim(),
-
-    check("address.street")
-        .optional()
-        .isString().withMessage("Street must be a string")
-        .trim()
-        .escape(),
-
-    check("address.city")
-        .optional()
-        .isString().withMessage("City must be a string")
-        .trim()
-        .escape(),
-
-    check("address.state")
-        .optional()
-        .isString().withMessage("State must be a string")
-        .trim()
-        .escape(),
-
-    check("address.country")
-        .optional()
-        .isString().withMessage("Country must be a string")
-        .trim()
-        .escape(),
-
-    check("address.postalCode")
-        .optional()
-        .matches(/^\d{6}$/).withMessage("Invalid postal code. Must be a 6-digit PIN code")
-        .trim(),
+        .isIn(["user", "trainer", "admin"]).withMessage("Invalid role. Must be 'user', 'trainer' or 'admin'")
 ];
 
+// ✅ Profile update validation
 exports.validateUserProfileUpdate = [
     check("name")
         .optional()
@@ -78,51 +40,10 @@ exports.validateUserProfileUpdate = [
         .optional()
         .isEmail().withMessage("Invalid email format")
         .normalizeEmail()
-        .trim(),
-
-    check("password")
-        .optional()
-        .isLength({ min: 8 }).withMessage("Password must be at least 8 characters")
-        .matches(/\d/).withMessage("Password must contain at least one digit")
-        .matches(/[!@#$%^&*]/).withMessage("Password must contain at least one special character (!@#$%^&*)")
-        .trim(),
-
-    check("phone")
-        .optional()
-        .customSanitizer(value => value.replace(/\D/g, ""))
-        .matches(/^\d{10}$/).withMessage("Invalid phone number. Must be a 10-digit number")
-        .trim(),
-
-    check("address.street")
-        .optional()
-        .isString().withMessage("Street must be a string")
         .trim()
-        .escape(),
-
-    check("address.city")
-        .optional()
-        .isString().withMessage("City must be a string")
-        .trim()
-        .escape(),
-
-    check("address.state")
-        .optional()
-        .isString().withMessage("State must be a string")
-        .trim()
-        .escape(),
-
-    check("address.country")
-        .optional()
-        .isString().withMessage("Country must be a string")
-        .trim()
-        .escape(),
-
-    check("address.postalCode")
-        .optional()
-        .matches(/^\d{6}$/).withMessage("Invalid postal code. Must be a 6-digit PIN code")
-        .trim(),
 ];
 
+// ✅ Login validation
 exports.validateUserLogin = [
     check("email")
         .notEmpty().withMessage("Email is required")
@@ -132,11 +53,48 @@ exports.validateUserLogin = [
 
     check("password")
         .notEmpty().withMessage("Password is required")
-        .trim(),
+        .trim()
 ];
 
+// ✅ Change password validation
+exports.validateChangePassword = [
+    check("currentPassword")
+        .notEmpty().withMessage("Current password is required")
+        .trim(),
+
+    check("newPassword")
+        .notEmpty().withMessage("New password is required")
+        .isLength({ min: 8 }).withMessage("New password must be at least 8 characters")
+        .matches(/\d/).withMessage("New password must contain at least one digit")
+        .matches(/[!@#$%^&*]/).withMessage("New password must contain at least one special character (!@#$%^&*)")
+        .trim()
+];
+
+// ✅ Role validation
 exports.validateUserRole = [
     check("role")
         .notEmpty().withMessage("Role is required")
-        .isIn(["Customer", "Admin"]).withMessage("Invalid role. Must be 'Customer' or 'Admin'"),
+        .isIn(["user", "trainer", "admin"]).withMessage("Invalid role. Must be 'user', 'trainer' or 'admin'")
+];
+
+// ✅ Alias for validateUserRole
+exports.validateAssignRole = exports.validateUserRole;
+
+// ✅ Forgot password validation
+exports.validateForgotPassword = [
+    check("email")
+        .notEmpty().withMessage("Email is required")
+        .isEmail().withMessage("Invalid email format")
+        .normalizeEmail()
+        .trim()
+];
+
+// ✅ Reset password validation
+exports.validateResetPassword = [
+    check("password")
+        .notEmpty().withMessage("Password is required")
+        .isLength({ min: 8 }).withMessage("Password must be at least 8 characters")
+        .matches(/\d/).withMessage("Password must contain at least one digit")
+        .matches(/[!@#$%^&*]/).withMessage("Password must contain at least one special character (!@#$%^&*)")
+        .trim()
 ];
