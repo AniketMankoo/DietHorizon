@@ -1,13 +1,20 @@
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
-const ProtectedRoute = ({ children, roles }) => {
-  const { user } = useUser();
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useUser();
 
-  if (!user || !roles.includes(user.role)) {
+  // Show loading state while checking authentication
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
     return <Navigate to="/login" />;
   }
 
+  // Render children if authenticated
   return children;
 };
 
