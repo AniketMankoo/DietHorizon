@@ -1,0 +1,24 @@
+[
+    {
+      "id": "1",
+      "name": "Protein Bar",
+      "price": "Rs 399",
+      "img": "/product1.jpg",
+      "description": "A healthy and delicious protein-packed bar."
+    },
+    {
+      "id": "2",
+      "name": "Vegan Protein",
+      "price": "Rs 459",
+      "img": "/product2.jpg",
+      "description": "Plant-based protein powder for muscle recovery."
+    },
+    {
+      "id": "3",
+      "name": "Pintola Oats",
+      "price": "Rs 625",
+      "img": "/product3.jpg",
+      "description": "Premium quality oats from Pintola."
+    }
+  ]
+  

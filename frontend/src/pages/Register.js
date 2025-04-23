@@ -1,82 +1,134 @@
-// src/pages/Register.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/api';
+import axios from 'axios';
 
 function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user');
+  // State for form data with initial values
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'user' // Default role
+  });
+
+  // State for UI feedback
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+
+  // Hook for navigation
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  // Handle input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !email || !password) {
-      setError('Please fill in all fields.');
+    // Clear previous messages
+    setError('');
+    setSuccess('');
+
+    // Validate form data
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('Please fill in all required fields');
       return;
     }
 
-    setLoading(true);
-    setError('');
-
     try {
-      await authService.register({ name, email, password, role });
+      // Set loading state while making API request
+      setLoading(true);
 
-      // Registration successful, redirect to login
-      navigate('/login');
+      // Call the register API endpoint
+      const response = await axios.post('http://localhost:3300/api/auth/register', formData);
+
+      // Display success message
+      setSuccess(response.data.message || 'Registration successful!');
+
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (err) {
+      // Handle registration errors
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
+      // Reset loading state
       setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleRegister} style={styles.form}>
-        <h2 style={styles.title}>Register for Diet Horizon</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2 style={styles.title}>Create Account</h2>
 
+        {/* Display error message if any */}
         {error && <div style={styles.error}>{error}</div>}
 
-        <input
-          type="text"
-          placeholder="Full Name"
-          style={styles.input}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={loading}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          style={styles.input}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={loading}
-        />
-        <input
-          type="password"
-          placeholder="Password (8+ chars, include a digit and special char)"
-          style={styles.input}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-        />
+        {/* Display success message if any */}
+        {success && <div style={styles.success}>{success}</div>}
 
-        <div style={styles.roleSelect}>
-          <label>Register as:</label>
+        <div style={styles.inputGroup}>
+          <label htmlFor="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Enter your full name"
+            style={styles.input}
+            required
+          />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your email"
+            style={styles.input}
+            required
+          />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Create a password"
+            style={styles.input}
+            required
+          />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label htmlFor="role">Account Type</label>
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
             style={styles.select}
-            disabled={loading}
           >
-            <option value="user">User</option>
-            <option value="trainer">Dietician</option>
+            <option value="user">Regular User</option>
+            <option value="trainer">Trainer</option>
           </select>
         </div>
 
@@ -85,12 +137,11 @@ function Register() {
           style={styles.button}
           disabled={loading}
         >
-          {loading ? 'Registering...' : 'Register'}
+          {loading ? 'Creating account...' : 'Create Account'}
         </button>
 
-        <p style={styles.note}>
-          Already have an account?{' '}
-          <span onClick={() => navigate('/login')} style={styles.link}>Login</span>
+        <p style={styles.linkContainer}>
+          Already have an account? <span onClick={() => navigate('/login')} style={styles.link}>Login</span>
         </p>
       </form>
     </div>
@@ -99,47 +150,64 @@ function Register() {
 
 const styles = {
   container: {
+    minHeight: '100vh',
+    backgroundColor: '#121212',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f7f9fc'
+    padding: '20px',
   },
   form: {
+    backgroundColor: '#1e1e1e',
+    color: 'white',
+    padding: '30px',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
     width: '100%',
     maxWidth: '400px',
-    padding: '30px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-    backgroundColor: 'white'
   },
   title: {
     textAlign: 'center',
-    marginBottom: '30px',
-    color: '#333'
+    marginBottom: '20px',
+    color: 'white',
+    fontSize: '24px',
+  },
+  error: {
+    color: '#ff6b6b',
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: '10px',
+    borderRadius: '4px',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  success: {
+    color: '#4CAF50',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    padding: '10px',
+    borderRadius: '4px',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  inputGroup: {
+    marginBottom: '15px',
   },
   input: {
     width: '100%',
-    padding: '12px',
-    marginBottom: '15px',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-    boxSizing: 'border-box',
-    fontSize: '16px'
-  },
-  roleSelect: {
-    marginBottom: '15px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
+    padding: '10px',
+    backgroundColor: '#333',
+    border: 'none',
+    borderRadius: '4px',
+    color: 'white',
+    marginTop: '5px',
   },
   select: {
+    width: '100%',
     padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-    backgroundColor: 'white',
-    fontSize: '16px',
-    width: '60%'
+    backgroundColor: '#333',
+    border: 'none',
+    borderRadius: '4px',
+    color: 'white',
+    marginTop: '5px',
   },
   button: {
     width: '100%',
@@ -147,30 +215,23 @@ const styles = {
     backgroundColor: '#4CAF50',
     color: 'white',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '16px',
-    marginTop: '10px',
-    marginBottom: '20px'
+    marginTop: '20px',
+    fontWeight: 'bold',
+    transition: 'background-color 0.2s',
   },
-  note: {
+  linkContainer: {
+    marginTop: '15px',
     textAlign: 'center',
     fontSize: '14px',
-    color: '#666'
   },
   link: {
     color: '#4CAF50',
     cursor: 'pointer',
-    fontWeight: 'bold'
-  },
-  error: {
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    padding: '10px',
-    borderRadius: '5px',
-    marginBottom: '15px',
-    textAlign: 'center'
+    textDecoration: 'underline',
   }
 };
 
 export default Register;
+  

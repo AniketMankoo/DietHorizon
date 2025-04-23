@@ -1,26 +1,61 @@
-// src/components/Navbar.js
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 function Navbar() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    // Placeholder: Add real logout logic when backend is connected
     alert('Logged out!');
     navigate('/login');
+  };
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
   };
 
   return (
     <nav style={styles.navbar}>
       <div style={styles.logo}>
-        <Link to="/" style={styles.logoText}>Diet Horizon</Link>
+        <Link to="/" style={styles.logoText}>🌿 Diet Horizon</Link>
       </div>
+
       <ul style={styles.navLinks}>
         <li><Link to="/" style={styles.link}>Home</Link></li>
         <li><Link to="/bmi-calculator" style={styles.link}>BMI Calculator</Link></li>
         <li><Link to="/diet-creator" style={styles.link}>AI Diet Creator</Link></li>
-        <li><button onClick={handleLogout} style={styles.logoutButton}>Logout</button></li>
+
+        {/* Admin Dashboard Link */}
+        {user?.role === 'Admin' && (
+          <li><Link to="/admin" style={styles.adminLink}>Admin Dashboard</Link></li>
+        )}
+
+        <li>
+          <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+        </li>
+
+        {/* Profile Dropdown */}
+        <li style={{ position: 'relative' }}>
+          <button onClick={toggleDropdown} style={styles.profileButton}>
+            <span style={styles.profileIcon}>{user?.name ? '👋' : '👤'}</span> {user?.name || 'Guest'}
+            {/* Apply conditional styles for the dropdown arrow */}
+            <span style={{ ...styles.dropdownArrow, transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+          </button>
+
+          {dropdownOpen && (
+            <div style={styles.dropdown}>
+              {!user?.name && <Link to="/login" style={styles.dropdownItem}>Login</Link>}
+              {!user?.name && <Link to="/register" style={styles.dropdownItem}>Register</Link>}
+              {user?.name && (
+                <div style={styles.dropdownRole}>
+                  Role: <strong>{user?.role}</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </li>
       </ul>
     </nav>
   );
@@ -28,51 +63,123 @@ function Navbar() {
 
 const styles = {
   navbar: {
-    backgroundColor: '#ffffff',
-    padding: '15px 30px',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+    background: 'linear-gradient(to right, #0f0f0f, #2c2c2c)',
+    padding: '16px 32px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     position: 'sticky',
     top: 0,
-    zIndex: 1000,
-  },
-  logo: {
-    fontSize: '24px',
-    fontWeight: 'bold',
+    zIndex: 999,
   },
   logoText: {
     textDecoration: 'none',
-    color: '#4CAF50',
+    color: '#00e676',
     fontWeight: 'bold',
-    fontSize: '22px',
+    fontSize: '24px',
   },
   navLinks: {
     display: 'flex',
     listStyle: 'none',
-    gap: '20px',
+    gap: '18px',
     alignItems: 'center',
     margin: 0,
   },
   link: {
     textDecoration: 'none',
-    color: '#333',
+    color: '#ffffff',
     fontSize: '16px',
-    padding: '8px 12px',
+    padding: '8px 14px',
     borderRadius: '6px',
-    transition: '0.2s ease-in-out',
+    transition: 'background 0.3s ease-in-out, color 0.3s ease-in-out',
+  },
+  linkHover: {
+    background: '#4CAF50',
+    color: '#fff',
+  },
+  adminLink: {
+    textDecoration: 'none',
+    color: '#ff9800',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    padding: '8px 14px',
+    borderRadius: '6px',
+    backgroundColor: '#333',
+    transition: 'background 0.3s ease-in-out',
+  },
+  adminLinkHover: {
+    backgroundColor: '#ff9800',
+    color: '#fff',
   },
   logoutButton: {
-    backgroundColor: '#e74c3c',
-    color: '#fff',
+    backgroundColor: '#ff3d00',
+    color: 'white',
     border: 'none',
     padding: '8px 16px',
     fontSize: '14px',
-    borderRadius: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    transition: '0.2s ease-in-out',
-  }
+    fontWeight: '500',
+    transition: 'background 0.3s ease-in-out',
+  },
+  logoutButtonHover: {
+    backgroundColor: '#e64a19',
+  },
+  profileButton: {
+    backgroundColor: '#333',
+    color: '#fff',
+    border: '1px solid #555',
+    padding: '8px 14px',
+    fontSize: '14px',
+    borderRadius: '20px',
+    cursor: 'pointer',
+    fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    position: 'relative',
+  },
+  profileIcon: {
+    fontSize: '16px',
+  },
+  dropdownArrow: {
+    fontSize: '12px',
+    marginLeft: '5px',
+    transition: 'transform 0.3s ease-in-out',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '40px',
+    right: 0,
+    backgroundColor: '#222',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+    padding: '10px 15px',
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: '160px',
+    zIndex: 1000,
+  },
+  dropdownItem: {
+    color: '#eee',
+    textDecoration: 'none',
+    padding: '8px 0',
+    fontSize: '14px',
+    borderBottom: '1px solid #444',
+  },
+  dropdownRole: {
+    marginTop: '8px',
+    fontSize: '13px',
+    color: '#aaa',
+  },
+};
+
+// Apply hover effect to elements
+const applyHoverStyles = (styles, hoverStyle) => {
+  return {
+    ...styles,
+    ':hover': hoverStyle,
+  };
 };
 
 export default Navbar;
