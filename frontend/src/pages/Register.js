@@ -1,72 +1,147 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('Customer');
-  const [countryCode, setCountryCode] = useState('+91');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState({
-    street: '',
-    city: '',
-    state: '',
-    country: 'India',
-    postalCode: '',
+  // State for form data with initial values
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'user' // Default role
   });
 
+  // State for UI feedback
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+
+  // Hook for navigation
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  // Handle input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (
-      name && email && password && role &&
-      countryCode && phone &&
-      address.street && address.city && address.state && address.postalCode
-    ) {
-      alert(`Registered ${role} successfully!`);
-      navigate('/login');
-    } else {
-      alert('Please fill in all fields.');
+
+    // Clear previous messages
+    setError('');
+    setSuccess('');
+
+    // Validate form data
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      // Set loading state while making API request
+      setLoading(true);
+
+      // Call the register API endpoint
+      const response = await axios.post('http://localhost:3300/api/auth/register', formData);
+
+      // Display success message
+      setSuccess(response.data.message || 'Registration successful!');
+
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
+    } catch (err) {
+      // Handle registration errors
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      // Reset loading state
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleRegister} style={styles.form}>
-        <h2 style={styles.title}>Create Your Account</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2 style={styles.title}>Create Account</h2>
 
-        <input type="text" placeholder="Full Name" style={styles.input} value={name} onChange={(e) => setName(e.target.value)} />
-        <input type="email" placeholder="Email Address" style={styles.input} value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" style={styles.input} value={password} onChange={(e) => setPassword(e.target.value)} />
+        {/* Display error message if any */}
+        {error && <div style={styles.error}>{error}</div>}
 
-        <select style={styles.select} value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="Customer">Customer</option>
-          <option value="Trainer">Trainer</option>
-          <option value="Admin">Admin</option>
-        </select>
+        {/* Display success message if any */}
+        {success && <div style={styles.success}>{success}</div>}
 
-        <div style={styles.flexRow}>
-          <select style={{ ...styles.select, flex: '0.5' }} value={countryCode} onChange={(e) => setCountryCode(e.target.value)}>
-            <option value="+91">+91 (India)</option>
-            <option value="+1">+1 (USA)</option>
-            <option value="+44">+44 (UK)</option>
-            <option value="+971">+971 (UAE)</option>
-          </select>
-          <input type="tel" placeholder="Phone Number" style={{ ...styles.input, flex: '1' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <div style={styles.inputGroup}>
+          <label htmlFor="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Enter your full name"
+            style={styles.input}
+            required
+          />
         </div>
 
-        <input type="text" placeholder="Street" style={styles.input} value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
-        <input type="text" placeholder="City" style={styles.input} value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-        <input type="text" placeholder="State" style={styles.input} value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
-        <input type="text" placeholder="Postal Code" style={styles.input} value={address.postalCode} onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} />
+        <div style={styles.inputGroup}>
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your email"
+            style={styles.input}
+            required
+          />
+        </div>
 
-        <button type="submit" style={styles.button}>Register</button>
+        <div style={styles.inputGroup}>
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Create a password"
+            style={styles.input}
+            required
+          />
+        </div>
 
-        <p style={styles.note}>
-          Already have an account?{' '}
-          <span onClick={() => navigate('/login')} style={styles.link}>Login</span>
+        <div style={styles.inputGroup}>
+          <label htmlFor="role">Account Type</label>
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            style={styles.select}
+          >
+            <option value="user">Regular User</option>
+            <option value="trainer">Trainer</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          style={styles.button}
+          disabled={loading}
+        >
+          {loading ? 'Creating account...' : 'Create Account'}
+        </button>
+
+        <p style={styles.linkContainer}>
+          Already have an account? <span onClick={() => navigate('/login')} style={styles.link}>Login</span>
         </p>
       </form>
     </div>
@@ -77,77 +152,86 @@ const styles = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#121212',
-    // backgroundImage: 'url(/register.jpg)',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
   },
   form: {
-    background: 'rgba(30, 30, 30, 0.95)',
-    color: '#fff',
-    padding: '40px',
-    borderRadius: '16px',
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+    backgroundColor: '#1e1e1e',
+    color: 'white',
+    padding: '30px',
+    borderRadius: '12px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
     width: '100%',
-    maxWidth: '500px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
+    maxWidth: '400px',
   },
   title: {
     textAlign: 'center',
-    color: '#ffffff',
-    fontSize: '26px',
-    fontWeight: '600',
-    marginBottom: '10px',
+    marginBottom: '20px',
+    color: 'white',
+    fontSize: '24px',
+  },
+  error: {
+    color: '#ff6b6b',
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: '10px',
+    borderRadius: '4px',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  success: {
+    color: '#4CAF50',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    padding: '10px',
+    borderRadius: '4px',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  inputGroup: {
+    marginBottom: '15px',
   },
   input: {
-    padding: '14px',
-    borderRadius: '10px',
-    border: '1px solid #444',
-    fontSize: '16px',
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
-    outline: 'none',
+    width: '100%',
+    padding: '10px',
+    backgroundColor: '#333',
+    border: 'none',
+    borderRadius: '4px',
+    color: 'white',
+    marginTop: '5px',
   },
   select: {
-    padding: '14px',
-    borderRadius: '10px',
-    border: '1px solid #444',
-    fontSize: '16px',
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
-    outline: 'none',
-  },
-  flexRow: {
-    display: 'flex',
-    gap: '10px',
+    width: '100%',
+    padding: '10px',
+    backgroundColor: '#333',
+    border: 'none',
+    borderRadius: '4px',
+    color: 'white',
+    marginTop: '5px',
   },
   button: {
+    width: '100%',
+    padding: '12px',
     backgroundColor: '#4CAF50',
     color: 'white',
-    padding: '14px',
     border: 'none',
-    borderRadius: '10px',
-    fontSize: '17px',
-    fontWeight: '500',
+    borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'background 0.3s ease-in-out',
+    marginTop: '20px',
+    fontWeight: 'bold',
+    transition: 'background-color 0.2s',
   },
-  note: {
-    fontSize: '14px',
-    color: '#bbb',
+  linkContainer: {
+    marginTop: '15px',
     textAlign: 'center',
+    fontSize: '14px',
   },
   link: {
-    color: '#00bcd4',
+    color: '#4CAF50',
     cursor: 'pointer',
-    fontWeight: '500',
     textDecoration: 'underline',
-  },
+  }
 };
 
 export default Register;
+  
