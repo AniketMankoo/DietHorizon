@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UserDashboard from './pages/UserDashboard';
-import DieticianDashboard from './pages/DieticianDashboard';
+import TrainerDashboard from './pages/TrainerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Navbar from './components/Navbar';

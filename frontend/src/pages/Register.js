@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/api';
 
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-<<<<<<< HEAD
   const [role, setRole] = useState('Customer');
   const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
@@ -18,51 +16,26 @@ function Register() {
     postalCode: '',
   });
 
-=======
-  const [role, setRole] = useState('user');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
->>>>>>> bd029d5abd43f850dbaa081c7eae57870cd0ecdb
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
-<<<<<<< HEAD
     if (
       name && email && password && role &&
       countryCode && phone &&
       address.street && address.city && address.state && address.postalCode
     ) {
       alert(`Registered ${role} successfully!`);
-=======
-
-    if (!name || !email || !password) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      await authService.register({ name, email, password, role });
-
-      // Registration successful, redirect to login
->>>>>>> bd029d5abd43f850dbaa081c7eae57870cd0ecdb
       navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
+    } else {
+      alert('Please fill in all fields.');
     }
   };
 
   return (
     <div style={styles.container}>
       <form onSubmit={handleRegister} style={styles.form}>
-        <h2 style={styles.title}>Register for Diet Horizon</h2>
-
-        {error && <div style={styles.error}>{error}</div>}
+        <h2 style={styles.title}>Create Your Account</h2>
 
         <input type="text" placeholder="Full Name" style={styles.input} value={name} onChange={(e) => setName(e.target.value)} />
         <input type="email" placeholder="Email Address" style={styles.input} value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -110,8 +83,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f7f9fc'
+    padding: '20px',
   },
   form: {
     background: 'rgba(30, 30, 30, 0.95)',
@@ -169,8 +141,6 @@ const styles = {
     fontSize: '14px',
     color: '#bbb',
     textAlign: 'center',
-    fontSize: '14px',
-    color: '#666'
   },
   link: {
     color: '#00bcd4',
@@ -178,14 +148,6 @@ const styles = {
     fontWeight: '500',
     textDecoration: 'underline',
   },
-  error: {
-    backgroundColor: '#ffebee',
-    color: '#c62828',
-    padding: '10px',
-    borderRadius: '5px',
-    marginBottom: '15px',
-    textAlign: 'center'
-  }
 };
 
 export default Register;

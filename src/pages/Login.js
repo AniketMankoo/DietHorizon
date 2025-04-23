@@ -1,3 +1,4 @@
+// src/pages/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,9 +9,10 @@ function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Temporary fake login logic
     if (email && password) {
       alert('Login successful!');
-      navigate('/dashboard');
+      navigate('/dashboard'); // Redirect to user dashboard
     } else {
       alert('Please enter email and password.');
     }
@@ -22,25 +24,20 @@ function Login() {
         <h2 style={styles.title}>Login to Diet Horizon</h2>
         <input
           type="email"
-          placeholder="Enter your email"
+          placeholder="Email"
           style={styles.input}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
         <input
           type="password"
-          placeholder="Enter your password"
+          placeholder="Password"
           style={styles.input}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
         <button type="submit" style={styles.button}>Login</button>
-        <p style={styles.note}>
-          Don't have an account?{' '}
-          <span onClick={() => navigate('/register')} style={styles.link}>Register</span>
-        </p>
+        <p style={styles.note}>Don't have an account? <span onClick={() => navigate('/register')} style={styles.link}>Register</span></p>
       </form>
     </div>
   );
@@ -49,18 +46,21 @@ function Login() {
 const styles = {
   container: {
     minHeight: '100vh',
-    backgroundColor: '#121212',
+    // background: 'linear-gradient(to right, #e0f7fa, #ffffff)',
+    backgroundImage: 'url(/login.jpg)', 
+    backgroundSize: 'cover',
+    backgroundPosition: 'center center',
+    
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
   },
   form: {
-    backgroundColor: '#1e1e1e',
-    color: '#fff',
+    background: '#fff',
     padding: '40px',
     borderRadius: '12px',
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
     width: '100%',
     maxWidth: '400px',
     display: 'flex',
@@ -70,37 +70,33 @@ const styles = {
   title: {
     textAlign: 'center',
     marginBottom: '10px',
-    color: '#ffffff',
-    fontSize: '24px',
-    fontWeight: 'bold',
+    color: '#2c3e50',
   },
   input: {
     padding: '12px',
     borderRadius: '8px',
-    border: '1px solid #444',
+    border: '1px solid #ccc',
     fontSize: '16px',
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
     outline: 'none',
+    transition: 'border-color 0.3s',
   },
   button: {
     backgroundColor: '#4CAF50',
-    color: '#fff',
+    color: 'white',
     padding: '12px',
     border: 'none',
     borderRadius: '8px',
     fontSize: '16px',
-    fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'background 0.3s',
   },
   note: {
     fontSize: '14px',
-    color: '#aaa',
+    color: '#555',
     textAlign: 'center',
   },
   link: {
-    color: '#00bcd4',
+    color: '#007bff',
     cursor: 'pointer',
     textDecoration: 'underline',
   },
