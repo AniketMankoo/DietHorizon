@@ -1,21 +1,96 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import products from '../data/products.json';
 
 function Home() {
+  const images = ['/back1.jpg', '/back2.jpg', '/back3.jpg', '/back4.jpg'];
+  const texts = [
+    "Get your workout plan now",
+    "Get personalised diet plan",
+    "Explore other features",
+    "Welcome to Diet Horizon"
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentText, setCurrentText] = useState(texts[0]);
+  const [textAlignment, setTextAlignment] = useState('center');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % images.length;
+        setCurrentText(texts[nextIndex]);
+
+        if (nextIndex === 0) setTextAlignment('left');
+        else if (nextIndex === 1) setTextAlignment('center');
+        else if (nextIndex === 2) setTextAlignment('right');
+        else setTextAlignment('center');
+
+        return nextIndex;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const backgroundImage = `url(${images[currentImageIndex]})`;
+
   return (
-    <div style={styles.container}>
-      <div style={styles.hero}>
-        <h1 style={styles.title}>Welcome to Diet Horizon</h1>
-        <p style={styles.subtitle}>
-          Your personal guide to healthier living through smart nutrition and fitness.
-        </p>
-        <div style={styles.buttonGroup}>
-          <Link to="/register" style={styles.button}>Get Started</Link>
-          <Link to="/bmi-calculator" style={{ ...styles.button, ...styles.secondary }}>
-            Try BMI Calculator
-          </Link>
+    <div>
+      {/* Hero Section */}
+      <div style={{ ...styles.container, backgroundImage }}>
+        <div style={styles.overlay}></div>
+
+        <div style={{
+          ...styles.heroTextContainer,
+          textAlign: textAlignment,
+          left: textAlignment === 'left' ? '10%' : textAlignment === 'right' ? '75%' : '50%',
+          transform: 'translateX(-50%)'
+        }}>
+          <p style={styles.subtitle}>
+            {currentText.split(' ').map((word, index) => (
+              <span key={index} style={{
+                display: 'block',
+                fontSize: '60px',
+                marginLeft: '70px',
+                marginBottom: '12px'
+              }}>
+                {word}
+              </span>
+            ))}
+          </p>
         </div>
       </div>
+
+      {/* Shop Section */}
+      <div style={styles.ecommerceSection}>
+        <h2 style={styles.sectionTitle}>Shop Smart • Eat Smart</h2>
+        <div style={styles.productsGrid}>
+          {products.map((item) => (
+            <div
+              key={item.id}
+              style={styles.productCard}
+              onClick={() => navigate(`/product/${item.id}`)}
+            >
+              <img src={item.img} alt={item.name} style={styles.productImage} />
+              <h3 style={styles.productName}>{item.name}</h3>
+              <p style={styles.productPrice}>₹{item.price}</p>
+              <button
+                style={styles.buyButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  alert(`${item.name} added to cart!`);
+                }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
       <div style={styles.footer}>
         <p style={styles.footerText}>Start your journey today and take control of your health!</p>
       </div>
@@ -25,73 +100,112 @@ function Home() {
 
 const styles = {
   container: {
-    minHeight: '100vh',
-    backgroundImage: 'url(/img1.jpg)', // Add your image here
+    minHeight: '80vh',
     backgroundSize: 'cover',
     backgroundPosition: 'center center',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '40px 20px',
     position: 'relative',
+    padding: '40px 20px',
+    transition: 'background-image 1s ease-in-out',
   },
-  hero: {
-    textAlign: 'center',
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    zIndex: 1,
+  },
+  heroTextContainer: {
+    position: 'absolute',
+    top: '10%',
+    zIndex: 2,
+    color: '#fff',
     maxWidth: '600px',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    padding: '50px',
-    borderRadius: '12px',
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
-  },
-  title: {
-    fontSize: '36px',
-    color: '#2c3e50',
-    marginBottom: '20px',
-    fontWeight: 'bold',
+    padding: '20px',
   },
   subtitle: {
-    fontSize: '18px',
-    color: '#555',
-    marginBottom: '30px',
+    fontWeight: 'bold',
+    color: '#fff',
+    letterSpacing: '2px',
+    textTransform: 'uppercase',
+    animation: 'fadeIn 2s ease-in-out',
   },
-  buttonGroup: {
+  ecommerceSection: {
+    backgroundColor: '#1e1e1e',
+    padding: '60px 20px',
+    textAlign: 'center',
+    color: '#fff',
+    marginTop: '60px',
+  },
+  sectionTitle: {
+    fontSize: '32px',
+    marginBottom: '40px',
+    color: '#ffffff',
+  },
+  productsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+    gap: '30px',
+    maxWidth: '1000px',
+    margin: '0 auto',
+  },
+  productCard: {
+    backgroundColor: '#2c2c2c',
+    borderRadius: '16px',
+    padding: '20px',
+    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
     display: 'flex',
-    justifyContent: 'center',
-    gap: '15px',
-    flexWrap: 'wrap',
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    padding: '12px 25px',
-    fontSize: '16px',
-    border: 'none',
-    borderRadius: '8px',
-    textDecoration: 'none',
-    transition: 'all 0.3s ease',
+    flexDirection: 'column',
+    alignItems: 'center',
     cursor: 'pointer',
   },
-  secondary: {
-    backgroundColor: '#2196F3',
+  productImage: {
+    width: '100%',
+    height: '300px',
+    objectFit: 'cover',
+    borderRadius: '12px',
+    marginBottom: '15px',
+    transition: 'transform 0.3s ease',
   },
-  buttonHover: {
-    backgroundColor: '#388E3C',
+  productName: {
+    fontSize: '22px',
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: '6px',
+  },
+  productPrice: {
+    fontSize: '18px',
+    fontWeight: '500',
+    color: '#9be7a3',
+    marginBottom: '14px',
+  },
+  buyButton: {
+    backgroundColor: '#4CAF50',
+    color: '#fff',
+    border: 'none',
+    padding: '12px 24px',
+    fontSize: '15px',
+    fontWeight: 'bold',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease, transform 0.2s ease',
   },
   footer: {
-    position: 'absolute',
-    bottom: '20px',
+    position: 'relative',
     textAlign: 'center',
     width: '100%',
+    zIndex: 2,
+    marginTop: '60px',
   },
   footerText: {
     fontSize: '16px',
     color: '#fff',
   },
-};
-
-// Hover effect for buttons
-styles.buttonHover = {
-  backgroundColor: '#388E3C', // Darker green on hover
 };
 
 export default Home;
