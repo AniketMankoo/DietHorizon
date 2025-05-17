@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { useCart } from '../context/CartContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser(); // ✅ include setUser
+  const { user, setUser } = useUser();
+  const { cartItems } = useCart();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // ✅ clear token
-    setUser(null);                    // ✅ reset user context
-    navigate('/login');              // ✅ redirect
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/login');
   };
-
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -26,34 +27,37 @@ function Navbar() {
 
       <ul style={styles.navLinks}>
         <li><Link to="/" style={styles.link}>Home</Link></li>
+        <li><Link to="/products" style={styles.link}>Products</Link></li>
+        <li>
+          <Link to="/cart" style={styles.cartLink}>
+            🛒 Cart {cartItems.length > 0 && <span style={styles.cartBadge}>{cartItems.length}</span>}
+          </Link>
+        </li>
         <li><Link to="/bmi-calculator" style={styles.link}>BMI Calculator</Link></li>
-        <li><Link to="/diet-creator" style={styles.link}>AI Diet Creator</Link></li>
+        <li><Link to="/recipe-generator" style={styles.link}>AI Recipe Generator</Link></li>
 
-       {user?.role === 'admin' && (
-  <li><Link to="/admin" style={styles.adminLink}>Admin Dashboard</Link></li>
-)}
+        {user?.role === 'admin' && (
+          <li><Link to="/admin" style={styles.adminLink}>Admin Dashboard</Link></li>
+        )}
 
-{user?.role === 'trainer' && (
-  <li><Link to="/trainer" style={styles.link}>Trainer Dashboard</Link></li>
-)}
+        {user?.role === 'trainer' && (
+          <li><Link to="/trainer" style={styles.link}>Trainer Dashboard</Link></li>
+        )}
 
-{(user?.role === 'user' || user?.role === 'guest') && (
-  <li><Link to="/dashboard" style={styles.link}>Dashboard</Link></li>
-)}
+        {(user?.role === 'user' || user?.role === 'guest') && (
+          <li><Link to="/dashboard" style={styles.link}>Dashboard</Link></li>
+        )}
 
-
-     {user?.name && (
-  <li>
-    <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
-  </li>
-)}
-
+        {user?.name && (
+          <li>
+            <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+          </li>
+        )}
 
         {/* Profile Dropdown */}
         <li style={{ position: 'relative' }}>
           <button onClick={toggleDropdown} style={styles.profileButton}>
             <span style={styles.profileIcon}>{user?.name ? '👋' : '👤'}</span> {user?.name || 'Guest'}
-            {/* Apply conditional styles for the dropdown arrow */}
             <span style={{ ...styles.dropdownArrow, transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
           </button>
 
@@ -105,6 +109,25 @@ const styles = {
     padding: '8px 14px',
     borderRadius: '6px',
     transition: 'background 0.3s ease-in-out, color 0.3s ease-in-out',
+  },
+  cartLink: {
+    textDecoration: 'none',
+    color: '#ffffff',
+    fontSize: '16px',
+    padding: '8px 14px',
+    borderRadius: '6px',
+    transition: 'background 0.3s ease-in-out, color 0.3s ease-in-out',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  cartBadge: {
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    borderRadius: '50%',
+    padding: '2px 6px',
+    fontSize: '12px',
+    fontWeight: 'bold',
   },
   linkHover: {
     background: '#4CAF50',
@@ -185,14 +208,6 @@ const styles = {
     fontSize: '13px',
     color: '#aaa',
   },
-};
-
-// Apply hover effect to elements
-const applyHoverStyles = (styles, hoverStyle) => {
-  return {
-    ...styles,
-    ':hover': hoverStyle,
-  };
 };
 
 export default Navbar;

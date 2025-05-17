@@ -22,6 +22,10 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const dietPlanRoutes = require("./routes/dietPlanRoutes");
 const workoutPlanRoutes = require("./routes/workoutPlanRoutes");
+const recipeRoutes = require('./routes/recipeRoutes');
+const userRoutes = require('./routes/userRoutes');
+const trainerRoutes = require('./routes/trainerRoutes');
+
 const app = express();
 
 // Body parser
@@ -47,6 +51,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use("/api/diet-plans", dietPlanRoutes);
 app.use("/api/workout-plans", workoutPlanRoutes);
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/trainer', trainerRoutes);
 
 // Error handler middleware
 app.use(errorHandler);

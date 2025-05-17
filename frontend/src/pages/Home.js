@@ -4,6 +4,7 @@ import products from '../data/products.json';
 
 function Home() {
   const images = ['/back1.jpg', '/back2.jpg', '/back3.jpg', '/back4.jpg'];
+  // eslint-disable-next-line
   const texts = [
     "Get your workout plan now",
     "Get personalised diet plan",
@@ -32,7 +33,7 @@ function Home() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [currentImageIndex, images.length, texts]);
 
   const backgroundImage = `url(${images[currentImageIndex]})`;
 
@@ -109,6 +110,9 @@ const styles = {
     position: 'relative',
     padding: '40px 20px',
     transition: 'background-image 1s ease-in-out',
+    margin: '0 auto',
+    maxWidth: '100%',
+    overflow: 'hidden',
   },
   overlay: {
     position: 'absolute',

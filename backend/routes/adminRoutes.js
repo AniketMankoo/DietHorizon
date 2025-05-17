@@ -15,10 +15,13 @@ const router = express.Router();
 
 // Apply middleware to all admin routes
 router.use(protectMiddleware);
-router.use(authorizeRoles("Admin"));
+router.use(authorizeRoles("admin"));
 
 // User management routes
-router.get("/users", getAllUsers);
+router.get("/users", protectMiddleware, authorizeRoles("admin", "trainer"), getAllUsers);
+
+// Keep other routes admin-only
+router.delete("/users/:id", protectMiddleware, authorizeRoles("admin"), deleteUser);
 router.put("/users/:id/role", validateUserRole, validate, assignUserRole);
 router.delete("/users/:id", deleteUser);
 

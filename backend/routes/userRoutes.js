@@ -29,5 +29,6 @@ router.put("/:id", authorizeRoles("admin"), updateUser);
 router.delete("/:id", authorizeRoles("admin"), deleteUser);
 router.put("/:id/role", authorizeRoles("admin"), validateAssignRole, validateRequest, updateUserRole);
 router.put("/:id/password", authorizeRoles("admin"), changePassword);
+router.get("/clients", authorizeRoles("trainer", "admin"), getAllClients);
 
 module.exports = router;

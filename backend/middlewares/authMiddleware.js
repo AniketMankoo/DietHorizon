@@ -55,27 +55,65 @@ const protectMiddleware = asyncHandler(async (req, res, next) => {
     }
 });
 
+// Add a middleware to check if the user is a trainer or admin
+const isTrainerOrAdmin = (req, res, next) => {
+    if (req.user.role !== 'trainer' && req.user.role !== 'admin') {
+        return next(new ErrorResponse(errorMessages.FORBIDDEN, 403));
+    }
+    next();
+};
+  
 /**
  * Middleware to authorize based on user roles
  * @param {...String} roles - Allowed roles for the route
  * @returns {Function} - Express middleware function
  */
 const authorizeRoles = (...roles) => {
-    const allowedRoles = new Set(roles);
-
     return (req, res, next) => {
-        // Check if user exists and has role property
-        if (!req.user || !req.user.role) {
-            return next(new ErrorResponse(errorMessages.ACCESS_DENIED, 403));
+        // Convert both the user role and the required roles to lowercase for case-insensitive comparison
+        if (!req.user || !roles.map(role => role.toLowerCase()).includes(req.user.role.toLowerCase())) {
+            return next(
+                new ErrorResponse(errorMessages.FORBIDDEN, 403)
+            );
         }
-        
-        // Check if user's role is allowed
-        if (!allowedRoles.has(req.user.role)) {
-            return next(new ErrorResponse(errorMessages.FORBIDDEN, 403));
-        }
-        
         next();
     };
 };
+/**
+ * Middleware to check if the user is a trainer
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const isTrainer = (req, res, next) => {
+    if (req.user.role !== "trainer") {
+        return next(new ErrorResponse(errorMessages.FORBIDDEN, 403));
+    }
+    next();
+}
+/**
+ * Middleware to check if the user is a client
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const isClient = (req, res, next) => {
+    if (req.user.role !== "client") {
+        return next(new ErrorResponse(errorMessages.FORBIDDEN, 403));
+    }
+    next();
+}
+/**
+ * Middleware to check if the user is an admin
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const isAdmin = (req, res, next) => {
+    if (req.user.role !== "admin") {
+        return next(new ErrorResponse(errorMessages.FORBIDDEN, 403));
+    }
+    next();
+}
 
 module.exports = { protectMiddleware, authorizeRoles };

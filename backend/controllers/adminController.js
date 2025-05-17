@@ -50,24 +50,26 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 const assignUserRole = asyncHandler(async (req, res, next) => {
     const { role } = req.body;
     const user = await User.findById(req.params.id);
-    
+
     if (!user) {
         return next(new ErrorResponse(errorMessages.USER_NOT_FOUND, 404));
     }
-    
-    if (!role || !["user", "admin"].includes(role.toLowerCase())) {
+
+    // Update this line to include 'trainer' role
+    if (!role || !["user", "admin", "trainer"].includes(role.toLowerCase())) {
         return next(new ErrorResponse(errorMessages.INVALID_ROLE || "Invalid role", 400));
     }
-    
+
     user.role = role.toLowerCase();
     await user.save();
-    
+
     res.status(200).json({
         success: true,
         message: "User role updated successfully",
         data: user
     });
 });
+
 
 /**
  * @desc    Create a new product

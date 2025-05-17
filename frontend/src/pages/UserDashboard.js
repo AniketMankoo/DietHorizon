@@ -117,10 +117,10 @@ function UserDashboard() {
 
           {/* AI Diet Creator Card */}
           <div style={styles.card}>
-            <h3 style={styles.cardTitle}>AI Diet Creator</h3>
-            <p style={styles.cardContent}>Generate personalized diet plans with AI assistance.</p>
+            <h3 style={styles.cardTitle}>AI Recipe Generator</h3>
+            <p style={styles.cardContent}>Generate Recipes with AI assistance.</p>
             <button
-              onClick={() => navigate('/ai-diet-creator')}
+              onClick={() => navigate('/recipe-generator')}
               style={styles.button}
             >
               Create Diet Plan

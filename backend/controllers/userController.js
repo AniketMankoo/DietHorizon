@@ -201,6 +201,21 @@ const changePassword = asyncHandler(async (req, res, next) => {
         message: "Password changed successfully"
     });
 });
+// Add this to controllers/userController.js
+/**
+ * @desc    Get all normal users (clients)
+ * @route   GET /api/users/clients
+ * @access  Private/Trainer/Admin
+ */
+const getAllClients = asyncHandler(async (req, res, next) => {
+    const clients = await User.find({ role: 'user' }).select('-password');
+
+    res.status(200).json({
+        success: true,
+        count: clients.length,
+        data: clients
+    });
+});
 
 module.exports = {
     getAllUsers,
@@ -209,5 +224,6 @@ module.exports = {
     updateUser,
     deleteUser,
     updateUserRole,
-    changePassword
+    changePassword,
+    getAllClients
 };
