@@ -35,7 +35,15 @@ const errorMessages = {
     INVALID_ROLE: "Invalid role",
 
     // Token related errors
-    TOKEN_EXPIRED: "Token has expired"
+    TOKEN_EXPIRED: "Token has expired",
+
+     // Diet plan related errors
+    DIET_PLAN_NOT_FOUND: "Diet plan not found",
+    UNAUTHORIZED_DIET_PLAN: "Not authorized to access this diet plan",
+
+    // Workout plan related errors
+    WORKOUT_PLAN_NOT_FOUND: "Workout plan not found",
+    UNAUTHORIZED_WORKOUT_PLAN: "Not authorized to access this workout plan",
 };
 
 module.exports = errorMessages;

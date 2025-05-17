@@ -1,38 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useUser } from '../context/UserContext';
+import api from '../services/api'; // Import the API service
 
 function Login() {
-  // State variables for form inputs and UI status
+  // State variables remain the same
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Hooks for navigation and user context
   const navigate = useNavigate();
   const { setUser } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous errors
+    setError('');
 
-    // Form validation
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
 
     try {
-      // Set loading state while making API request
       setLoading(true);
 
-      // Make API request to login endpoint
-      const response = await axios.post('http://localhost:3300/api/auth/login', {
-        email,
-        password
-      });
+      // Use the API service instead of axios directly
+      const response = await api.post('/auth/login', { email, password });
 
       // Store authentication token in localStorage
       localStorage.setItem('token', response.data.token);
@@ -49,10 +43,8 @@ function Login() {
         navigate('/dashboard');
       }
     } catch (err) {
-      // Handle errors from the API
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
-      // Reset loading state regardless of outcome
       setLoading(false);
     }
   };

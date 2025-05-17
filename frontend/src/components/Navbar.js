@@ -4,13 +4,15 @@ import { useUser } from '../context/UserContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, setUser } = useUser(); // ✅ include setUser
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    alert('Logged out!');
-    navigate('/login');
+    localStorage.removeItem('token'); // ✅ clear token
+    setUser(null);                    // ✅ reset user context
+    navigate('/login');              // ✅ redirect
   };
+
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -27,14 +29,25 @@ function Navbar() {
         <li><Link to="/bmi-calculator" style={styles.link}>BMI Calculator</Link></li>
         <li><Link to="/diet-creator" style={styles.link}>AI Diet Creator</Link></li>
 
-        {/* Admin Dashboard Link */}
-        {user?.role === 'Admin' && (
-          <li><Link to="/admin" style={styles.adminLink}>Admin Dashboard</Link></li>
-        )}
+       {user?.role === 'admin' && (
+  <li><Link to="/admin" style={styles.adminLink}>Admin Dashboard</Link></li>
+)}
 
-        <li>
-          <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
-        </li>
+{user?.role === 'trainer' && (
+  <li><Link to="/trainer" style={styles.link}>Trainer Dashboard</Link></li>
+)}
+
+{(user?.role === 'user' || user?.role === 'guest') && (
+  <li><Link to="/dashboard" style={styles.link}>Dashboard</Link></li>
+)}
+
+
+     {user?.name && (
+  <li>
+    <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+  </li>
+)}
+
 
         {/* Profile Dropdown */}
         <li style={{ position: 'relative' }}>

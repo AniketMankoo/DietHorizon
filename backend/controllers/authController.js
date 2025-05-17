@@ -1,20 +1,21 @@
-// controllers/authController.js
+// D:\DietHorizon\backend\controllers\authController.js
 const crypto = require('crypto');
 const User = require('../models/userModel');
 const ErrorResponse = require('../utils/errorResponse');
 const errorMessages = require('../utils/errorMessages');
 const asyncHandler = require('../middlewares/asyncHandler');
 const jwt = require('jsonwebtoken');
+const { sendTokenResponse } = require('../utils/jwtUtils');
 
 /**
- * @desc    Register a user
+ * @desc    Register user
  * @route   POST /api/auth/register
  * @access  Public
  */
 const register = asyncHandler(async (req, res, next) => {
     const { name, email, password, role } = req.body;
 
-    // Check if all fields are provided
+    // Check if all required fields are provided
     if (!name || !email || !password) {
         return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
     }
@@ -33,8 +34,25 @@ const register = asyncHandler(async (req, res, next) => {
         role: role || 'user'
     });
 
-    sendTokenResponse(user, 201, res, "User registered successfully");
+    const token = jwt.sign(
+        { userId: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRE || '30d' }
+    );
+
+    res.status(201).json({
+        success: true,
+        message: "Registration successful",
+        token,
+        data: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
+    });
 });
+
 
 /**
  * @desc    Login user
@@ -49,8 +67,10 @@ const login = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
     }
 
-    // Check if user exists
+    // Find user by email and include password
     const user = await User.findOne({ email }).select('+password');
+
+    // Check if user exists
     if (!user) {
         return next(new ErrorResponse(errorMessages.INVALID_CREDENTIALS, 401));
     }
@@ -103,10 +123,6 @@ const logout = asyncHandler(async (req, res, next) => {
 const forgotPassword = asyncHandler(async (req, res, next) => {
     const { email } = req.body;
 
-    if (!email) {
-        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
-    }
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -115,16 +131,15 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 
     // Generate reset token
     const resetToken = user.getResetPasswordToken();
-    
+
     await user.save({ validateBeforeSave: false });
-    
-    // In a production app, you would send an email with the reset token
-    // For development, just return the token
-    
+
+    // In a real app, you would send an email with the reset token
+    // For demo purposes, just return the token in the response
     res.status(200).json({
         success: true,
-        message: "Password reset email sent",
-        resetToken // In production, remove this line
+        message: 'Password reset token generated',
+        resetToken
     });
 });
 
@@ -169,15 +184,6 @@ const updateDetails = asyncHandler(async (req, res, next) => {
         email: req.body.email
     };
 
-    // Only include fields that are actually provided
-    Object.keys(fieldsToUpdate).forEach(key => 
-        fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
-    );
-
-    if (Object.keys(fieldsToUpdate).length === 0) {
-        return next(new ErrorResponse(errorMessages.REQUIRED_FIELDS, 400));
-    }
-
     const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
         new: true,
         runValidators: true
@@ -208,34 +214,6 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 
     sendTokenResponse(user, 200, res, "Password updated successfully");
 });
-
-/**
- * Get token from model, create cookie and send response
- */
-const sendTokenResponse = (user, statusCode, res, message) => {
-    // Create token
-    const token = user.getSignedJwtToken();
-
-    const options = {
-        expires: new Date(
-            Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-        ),
-        httpOnly: true
-    };
-
-    if (process.env.NODE_ENV === 'production') {
-        options.secure = true;
-    }
-
-    res
-        .status(statusCode)
-        .cookie('token', token, options)
-        .json({
-            success: true,
-            message,
-            token
-        });
-};
 
 module.exports = {
     register,

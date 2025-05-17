@@ -1,58 +1,63 @@
 const jwt = require("jsonwebtoken");
 
 /**
- * Generate a JWT token for a user
- * @param {Object} payload - The data to encode in the token (usually contains userId)
- * @param {string} [expiresIn] - Optional override for token expiration
- * @returns {string} The signed JWT token
+ * Generate a JWT token
+ * @param {string} id - User ID to include in token
+ * @returns {string} Signed JWT
  */
-const generateToken = (payload) => {
+const generateToken = (id) => {
   return jwt.sign(
-    payload, 
-    process.env.JWT_SECRET, 
-    { expiresIn: process.env.JWT_EXPIRE }
+    { userId: id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '30d' }
   );
 };
 
 /**
- * Verify and decode a JWT token
- * @param {string} token - The token to verify
- * @returns {Object} The decoded token payload
- * @throws {Error} If token is invalid or expired
+ * Verify a JWT token
+ * @param {string} token - Token to verify
+ * @returns {Object} Decoded token
  */
 const verifyToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET);
-  } catch (error) {
-    throw error; // Will be caught by errorMiddleware
-  }
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 /**
- * Generate a token response with cookie
- * @param {Object} user - User object to generate token for
- * @param {number} statusCode - HTTP status code to return
+ * Send token response with cookie
+ * @param {Object} user - User object
+ * @param {number} statusCode - HTTP status code
  * @param {Object} res - Express response object
  * @param {string} message - Success message
  */
 const sendTokenResponse = (user, statusCode, res, message) => {
-  // Create token payload with user ID
-  const payload = { userId: user._id };
-  
-  // Generate token
-  const token = generateToken(payload);
+  // Generate token directly using the user ID
+  const token = jwt.sign(
+    { userId: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '30d' }
+  );
 
-  // Cookie options
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      Date.now() + (process.env.JWT_COOKIE_EXPIRE || 30) * 24 * 60 * 60 * 1000
     ),
     httpOnly: true
   };
 
-  // Secure cookie in production
   if (process.env.NODE_ENV === 'production') {
     options.secure = true;
+  }
+
+  // Prepare user data for response (remove password)
+  let userData;
+  if (user.toObject) {
+    // If it's a Mongoose document
+    userData = user.toObject();
+    delete userData.password;
+  } else {
+    // If it's a plain object
+    userData = { ...user };
+    delete userData.password;
   }
 
   res
@@ -60,8 +65,9 @@ const sendTokenResponse = (user, statusCode, res, message) => {
     .cookie('token', token, options)
     .json({
       success: true,
-      message,
-      token
+      message: message || "Success",
+      token,
+      data: userData
     });
 };
 

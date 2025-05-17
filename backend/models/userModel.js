@@ -1,84 +1,81 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+// D:\DietHorizon\backend\models\userModel.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
-const userSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: [true, "Please Enter a Name"],
-            trim: true,
-            minlength: [3, "Name must be at least 3 characters long"],
-            maxlength: [25, "Name can't be longer than 25 characters"],
-        },
-
-        email: {
-            type: String,
-            required: [true, "Please Enter an Email"],
-            unique: true,
-            lowercase: true,
-            trim: true,
-            match: [/\S+@\S+\.\S+/, "Please enter a valid email"],
-        },
-
-        password: {
-            type: String,
-            required: [true, "Password is required"],
-            minlength: [8, "Minimum 8 characters is required"],
-            select: false,
-        },
-
-        role: {
-            type: String,
-            enum: ["Customer", "Admin"],
-            default: "Customer",
-            required: true,
-            trim: true,
-        },
-
-        countryCode: {
-            type: String,
-            enum: ["+91"],
-            required: true,
-        },
-
-        phone: {
-            type: String,
-            required: true,
-            validate: {
-                validator: function (value) {
-                    return /^\d{10}$/.test(value);
-                },
-                message: "Invalid Phone Number. It must be a 10-digit number.",
-            },
-        },
-
-        address: {
-            street: { type: String, required: true },
-            city: { type: String, required: true },
-            state: { type: String, required: true },
-            country: { type: String, required: true, default: "India" },
-            postalCode: {
-                type: String,
-                required: true,
-                match: [/^\d{6}$/, "Invalid postal code. It must be a 6-digit PIN code."],
-            },
-        },
+const UserSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'Please add a name'],
+        trim: true,
+        maxlength: [50, 'Name cannot be more than 50 characters']
     },
-    { timestamps: true }
-);
+    email: {
+        type: String,
+        required: [true, 'Please add an email'],
+        unique: true,
+        match: [
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            'Please add a valid email'
+        ]
+    },
+    password: {
+        type: String,
+        required: [true, 'Please add a password'],
+        minlength: [6, 'Password must be at least 6 characters'],
+        select: false
+    },
+    role: {
+        type: String,
+        enum: ['user', 'trainer', 'admin'],
+        default: 'user'
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
 
-userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
+// Encrypt password using bcrypt
+UserSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        next();
+    }
 
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
-userSchema.methods.comparePassword = async function (enteredPassword) {
+// Sign JWT and return
+UserSchema.methods.getSignedJwtToken = function () {
+    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE
+    });
+};
+
+// Match user entered password to hashed password in database
+UserSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
+// Generate and hash password token
+UserSchema.methods.getResetPasswordToken = function () {
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
 
-module.exports = User;
+    // Hash token and set to resetPasswordToken field
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Set expire
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    return resetToken;
+};
+
+module.exports = mongoose.model('User', UserSchema);

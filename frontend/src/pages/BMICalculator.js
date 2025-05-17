@@ -129,7 +129,7 @@ const styles = {
   },
   result: {
     marginTop: '20px',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#45a049',
     padding: '15px',
     borderRadius: '8px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',

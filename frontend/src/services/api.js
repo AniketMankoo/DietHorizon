@@ -1,13 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3300/api',
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    baseURL: 'http://localhost:5000/api'
 });
 
-// Add a request interceptor to add auth token to requests
+// Request interceptor to add auth token to all requests
 api.interceptors.request.use(
     config => {
         const token = localStorage.getItem('token');
@@ -19,7 +16,7 @@ api.interceptors.request.use(
     error => Promise.reject(error)
 );
 
-// Add a response interceptor to handle 401 errors
+// Response interceptor to handle auth errors
 api.interceptors.response.use(
     response => response,
     error => {

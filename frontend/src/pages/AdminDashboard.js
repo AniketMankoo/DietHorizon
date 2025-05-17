@@ -21,18 +21,6 @@ function AdminDashboard() {
           </button>
         </div>
 
-        {/* Delete Users Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Delete Users</h3>
-          <p style={styles.cardContent}>Remove users from the platform.</p>
-          <button
-            onClick={() => navigate('/admin/delete-users')}
-            style={styles.button}
-          >
-            Delete User
-          </button>
-        </div>
-
         {/* Manage Products Card */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>Manage Products</h3>
@@ -56,30 +44,6 @@ function AdminDashboard() {
             View Orders
           </button>
         </div>
-
-        {/* Analytics Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Analytics</h3>
-          <p style={styles.cardContent}>Monitor key metrics and data insights.</p>
-          <button
-            onClick={() => navigate('/admin/analytics')}
-            style={styles.button}
-          >
-            View Analytics
-          </button>
-        </div>
-
-        {/* Site Settings Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Site Settings</h3>
-          <p style={styles.cardContent}>Configure site-wide settings and preferences.</p>
-          <button
-            onClick={() => navigate('/admin/settings')}
-            style={styles.button}
-          >
-            Configure Settings
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -88,13 +52,14 @@ function AdminDashboard() {
 const styles = {
   container: {
     padding: '40px',
-    backgroundColor: '#f5f8fa',
+    backgroundColor: '#121212',
     minHeight: '100vh',
+    color: '#fff',
   },
   heading: {
     fontSize: '28px',
     fontWeight: '600',
-    color: '#333',
+    color: '#fff',
     marginBottom: '30px',
     textAlign: 'center',
   },
@@ -104,26 +69,26 @@ const styles = {
     gap: '20px',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1e1e1e',
     borderRadius: '12px',
     padding: '20px',
-    boxShadow: '0 6px 12px rgba(0,0,0,0.08)',
+    boxShadow: '0 6px 12px rgba(0,0,0,0.5)',
     textAlign: 'center',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    cursor: 'pointer',
   },
   cardTitle: {
     fontSize: '20px',
     fontWeight: '600',
+    color: '#ffffff',
     marginBottom: '10px',
   },
   cardContent: {
     fontSize: '16px',
-    color: '#555',
+    color: '#cccccc',
     marginBottom: '15px',
   },
   button: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#1e88e5',
     color: '#fff',
     padding: '10px 16px',
     border: 'none',

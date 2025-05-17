@@ -12,6 +12,18 @@ function TrainerDashboard() {
       </p>
 
       <div style={styles.sectionGrid}>
+        {/* Manage Diet Plans Card */}
+        <div style={styles.card}>
+          <h3 style={styles.cardTitle}>Manage Diet Plans</h3>
+          <p style={styles.cardContent}>Create, update, and assign diet plans to your clients.</p>
+          <button
+            onClick={() => navigate('/trainer/diet-plans')}
+            style={styles.button}
+          >
+            Manage Diet Plans
+          </button>
+        </div>
+
         {/* Manage Workouts Card */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>Manage Workouts</h3>
@@ -36,42 +48,6 @@ function TrainerDashboard() {
           </button>
         </div>
 
-        {/* Progress Tracking Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Progress Tracking</h3>
-          <p style={styles.cardContent}>Track your clients' progress over time.</p>
-          <button
-            onClick={() => navigate('/trainer/progress')}
-            style={styles.button}
-          >
-            View Progress
-          </button>
-        </div>
-
-        {/* Nutrition Plan Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Nutrition Plan</h3>
-          <p style={styles.cardContent}>Create personalized nutrition plans for clients.</p>
-          <button
-            onClick={() => navigate('/trainer/nutrition')}
-            style={styles.button}
-          >
-            View Nutrition Plan
-          </button>
-        </div>
-
-        {/* Feedback and Reports Card */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Feedback & Reports</h3>
-          <p style={styles.cardContent}>Review feedback and reports from clients.</p>
-          <button
-            onClick={() => navigate('/trainer/feedback')}
-            style={styles.button}
-          >
-            View Feedback
-          </button>
-        </div>
-
         {/* Schedule Sessions Card */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>Schedule Sessions</h3>
@@ -91,51 +67,54 @@ function TrainerDashboard() {
 const styles = {
   container: {
     padding: '40px',
-    backgroundColor: '#f5f8fa',
+    backgroundColor: '#121212',
     minHeight: '100vh',
+    color: '#fff',
   },
   heading: {
     fontSize: '28px',
     fontWeight: '600',
-    color: '#333',
-    marginBottom: '30px',
+    color: '#f0f0f0',
+    marginBottom: '15px',
     textAlign: 'center',
   },
   infoText: {
-    fontSize: '18px',
-    color: '#555',
+    fontSize: '16px',
+    color: '#cccccc',
     textAlign: 'center',
-    marginBottom: '30px',
+    marginBottom: '40px',
   },
   roleText: {
+    color: '#00c896',
     fontWeight: 'bold',
-    color: '#4CAF50',
   },
   sectionGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
     gap: '20px',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1e1e1e',
     borderRadius: '12px',
     padding: '20px',
-    boxShadow: '0 6px 12px rgba(0,0,0,0.08)',
+    boxShadow: '0 6px 12px rgba(0,0,0,0.5)',
     textAlign: 'center',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    color: '#e0e0e0',
   },
   cardTitle: {
     fontSize: '20px',
     fontWeight: '600',
     marginBottom: '10px',
+    color: '#ffffff',
   },
   cardContent: {
     fontSize: '16px',
-    color: '#555',
+    color: '#bbbbbb',
     marginBottom: '15px',
   },
   button: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#00c896',
     color: '#fff',
     padding: '10px 16px',
     border: 'none',

@@ -1,25 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api'; 
 
 function Register() {
-  // State for form data with initial values
+  // State remains the same
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'user' // Default role
+    role: 'user'
   });
-
-  // State for UI feedback
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Hook for navigation
   const navigate = useNavigate();
 
-  // Handle input changes
+  // Form change handler remains the same
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -27,40 +24,29 @@ function Register() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous messages
     setError('');
     setSuccess('');
 
-    // Validate form data
     if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all required fields');
       return;
     }
 
     try {
-      // Set loading state while making API request
       setLoading(true);
 
-      // Call the register API endpoint
-      const response = await axios.post('http://localhost:3300/api/auth/register', formData);
+      // Use the API service instead of axios directly
+      const response = await api.post('/auth/register', formData);
 
-      // Display success message
       setSuccess(response.data.message || 'Registration successful!');
-
-      // Redirect to login page after a short delay
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-
     } catch (err) {
-      // Handle registration errors
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
-      // Reset loading state
       setLoading(false);
     }
   };
@@ -234,4 +220,3 @@ const styles = {
 };
 
 export default Register;
-  
